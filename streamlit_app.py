@@ -4,8 +4,8 @@ import altair as alt
 import requests
 from datetime import datetime
 
-conn = st.connection("postgresql", dialect = "postgresql", type = "sql")
-df = conn.query('SELECT * FROM student.ar_weather;', ttl="340m")
+conn = st.connection("postgresql")
+df = conn.query('SELECT * FROM archive_student.ar_weather;', ttl="340m")
 
 st.title("London Weather & Air Quality")
 
