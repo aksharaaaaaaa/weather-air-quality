@@ -5,7 +5,7 @@ import requests
 from datetime import datetime
 
 conn = st.connection("postgresql")
-df = conn.query('SELECT * FROM archive_student.ar_weather;', ttl="340m")
+df = conn.query('SELECT * FROM archive_student.ar_weather;', ttl="360m")
 
 st.title("London Weather & Air Quality")
 
