@@ -1,4 +1,4 @@
-# Weather & Air Quality Dashboard [:sun_behind_rain_cloud:]
+# Weather & Air Quality Dashboard ⛅
 
 Weather monitoring is vital for forecasting and planning for the general public but also various industries, such as agriculture and energy companies. Air quality information is important for warning people of potential risks and protecting public health. The changes of both weather and air quality can also demonstrate the effects of climate change.
 
