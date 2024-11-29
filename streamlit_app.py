@@ -4,11 +4,15 @@ import altair as alt
 import requests
 from datetime import datetime
 
+## SQL query to fetch data
 conn = st.connection("postgresql")
 df = conn.query('SELECT * FROM archive_student.ar_weather;', ttl="360m")
 
 st.title("London Weather & Air Quality")
 
+## WEATHER
+
+## Fetch most recent row of data for current weather update
 last_update = df.iloc[[-1]]['update_time'].to_string(index=False)
 current_temp = df.iloc[[-1]]['temperature'].to_string(index=False)
 current_feel = df.iloc[[-1]]['feelslike'].to_string(index=False)
@@ -29,6 +33,7 @@ pm10 = df.iloc[[-1]]['pm10'].to_string(index=False)
 pm2_5 =df.iloc[[-1]]['pm2_5'].to_string(index=False)
 so2 = df.iloc[[-1]]['so2'].to_string(index=False)
 
+# Colour-code levels of air pollution
 if air_qual == 'Low air pollution':
     aq_color = 'green'
 elif air_qual == 'Moderate air pollution':
@@ -38,6 +43,7 @@ elif air_qual == 'High air pollution':
 else:
     aq_color = 'grey'
     
+## Sidebar for displaying current weather conditions    
 with st.sidebar:
     st.title("Current weather")
     st.caption(f'Last updated: {last_update}')
@@ -58,6 +64,9 @@ with st.sidebar:
     st.write(f'**Wind speed:** {wind_speed} mph')
     st.write(f'**Windchill:** {windchill} °C')
 
+## Tabs for past weather tracking and future prediction
+
+# Combined line/bar graph for past precipitation & temperature
 weather_cont = st.container(border=True)
 tab1, tab2 = weather_cont.tabs(["Past weather", "3-day Forecast"])
 with tab1:
@@ -69,6 +78,7 @@ with tab1:
         y = 'independent').properties(title='Weather tracker')
     st.altair_chart(comb, use_container_width=True)
 
+# Containers for 3-day forecast of weather
 with tab2:
     api_key = st.secrets['api_key']
     response = requests.get(f'http://api.weatherapi.com/v1/forecast.json?key={api_key}&q=London&days=3&aqi=yes').json()
@@ -129,6 +139,9 @@ with tab2:
         day2.image(f'https:{condition_pics[2]}')
     #    day2.write(f':{aq_color}[{air_qual_fcs[2]}]')
 
+## AIR QUALITY
+
+# Create dataframe for current pollutant levels
 pollutants_df = {
     'Pollutant':['Carbon monoxide (CO)','Nitrogen dioxide (NO2)',
                  'Ozone (O3)','Sulfur dioxide (SO2)',
@@ -141,17 +154,25 @@ pollutants_df = {
 }
 st.divider()
 
+# Current air pollution level and DEFRA index
 air_qual_cont = st.container(border=True)
 air_qual_cont.subheader("Current air quality")
 air_qual_cont.write(f'**:{aq_color}[{air_qual}]** (DEFRA index: {defra_index})')
+
+# Display dataframe of current pollutant levels and ideal limit (DEFRA UK)
 air_qual_cont.dataframe(pollutants_df, use_container_width=True)
+
+# Expandable tab for information about pollutants
 with air_qual_cont.expander("More about pollutants"):
     st.write("Carbon monoxide (CO) prevents uptake of oxygen by blood & reduces supply to heart, affecting people with :red[heart disease].")
     st.write("Nitrogen dioxide (NO<sub>2</sub>), ozone (O<sub>3</sub>) & sulfur dioxide (SO<sub>2</sub>) irritate lung airways, affecting those with :red[lung disease].", unsafe_allow_html=True)
     st.write("Particulate matter can deposit into nose/throat (PM<sub>10</sub>) or deep into lungs (PM<sub>2.5</sub>) & cause inflammation, worsening :red[lung & heart conditions].", unsafe_allow_html=True)
 
+## Line chart to show past air pollutant concentrations
 air_qual_cont.line_chart(df, x='update_time', y=['co','no2','o3','so2','pm10','pm2_5'], 
                 x_label="Date", y_label="Concentration (μg/m3)",
                 color=['#53ff00','#b800ff','#0400ff','#ff8700','#ff0000','#ecff00'])
+
+# Reference information source
 air_qual_cont.caption("Information from [DEFRA UK](https://uk-air.defra.gov.uk)")
 
